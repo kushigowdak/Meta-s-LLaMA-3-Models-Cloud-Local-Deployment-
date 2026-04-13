@@ -1,0 +1,91 @@
+# ==============================
+# 1. INSTALL DEPENDENCIES
+# ==============================
+!pip install -q groq
+
+# ==============================
+# 2. LOAD API KEY SECURELY
+# ==============================
+import os
+from google.colab import userdata
+
+# Load from Colab secrets (DO NOT hardcode)
+os.environ["GROQ_API_KEY"] = userdata.get("GROQ_API_KEY")
+
+if os.getenv("GROQ_API_KEY") is None:
+    raise ValueError("❌ GROQ API KEY not found. Add it in Colab Secrets.")
+
+print("✅ API Key Loaded Securely")
+
+# ==============================
+# 3. INITIALIZE CLIENT
+# ==============================
+from groq import Groq
+
+client = Groq(api_key=os.environ["GROQ_API_KEY"])
+
+print("✅ Groq Client Initialized")
+
+# ==============================
+# 4. GENERIC RESPONSE FUNCTION
+# ==============================
+def generate_response(prompt, model="llama-3.1-8b-instant"):
+    try:
+        response = client.chat.completions.create(
+            model=model,
+            messages=[{"role": "user", "content": prompt}]
+        )
+        return response.choices[0].message.content
+    
+    except Exception as e:
+        return f"❌ Error: {str(e)}"
+
+# ==============================
+# 5. SIMPLE TEST
+# ==============================
+prompt = "Explain Large Language Models in simple terms."
+print("\n🧠 Basic Test Output:\n")
+print(generate_response(prompt))
+
+# ==============================
+# 6. ADVANCED PROMPT (YOUR USE CASE)
+# ==============================
+def generate_reel_script(topic):
+    prompt = f"""
+    Create a 30-second Instagram reel script on: {topic}
+
+    Requirements:
+    - Break into scenes of 2-3 seconds each
+    - Each scene should have:
+        Scene number
+        Visual description
+        Voiceover text
+    - Make it engaging and viral-style
+
+    Format:
+    Scene 1:
+    Visual:
+    Voiceover:
+
+    Scene 2:
+    ...
+    """
+
+    return generate_response(prompt)
+
+# ==============================
+# 7. GENERATE REEL SCRIPT
+# ==============================
+topic = "Future of AI in Daily Life"
+
+print("\n🎬 Reel Script:\n")
+script = generate_reel_script(topic)
+print(script)
+
+# ==============================
+# 8. OPTIONAL: SAVE OUTPUT
+# ==============================
+with open("reel_script.txt", "w") as f:
+    f.write(script)
+
+print("\n💾 Script saved as reel_script.txt")
